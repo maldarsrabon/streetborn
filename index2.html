@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STREET BORN — Claim Whitelist</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0A0A;
+    --bg-card: #131313;
+    --bg-raised: #1B1B1B;
+    --lime: #D7FF3D;
+    --lime-dim: #8A9E2A;
+    --lime-glow: rgba(215, 255, 61, 0.16);
+    --ink: #F5F5F0;
+    --ink-dim: #9A9A93;
+    --ink-faint: #5C5C56;
+    --border: rgba(245, 245, 240, 0.08);
+    --border-strong: rgba(245, 245, 240, 0.18);
+    --danger: #FF6B5E;
+  }
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.locked{ overflow: hidden; height: 100vh; }
+
+  #bg-fx{
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+  #touch-fx{
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  }
+  body > *:not(#touch-fx):not(#bg-fx):not(#intro-screen){ position: relative; z-index: 2; }
+
+  #intro-screen{
+    position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+    display:flex; align-items:center; justify-content:center;
+    transition: opacity 0.6s ease;
+  }
+  #intro-screen.hide{ opacity: 0; pointer-events: none; }
+  .intro-line{
+    font-family:'JetBrains Mono', monospace;
+    font-size: clamp(22px, 5vw, 40px);
+    color: var(--lime);
+    letter-spacing: 0.06em;
+    display:flex; align-items:center;
+  }
+  .intro-cursor{
+    display:inline-block; width: 0.55em; height: 1em; background: var(--lime);
+    margin-left: 4px; animation: intro-blink 0.85s steps(1) infinite;
+  }
+  @keyframes intro-blink{ 50%{ opacity: 0; } }
+  .display{ font-family: 'Space Grotesk', sans-serif; }
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+  .wrap{ max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+
+  /* nav */
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 26px 32px; max-width: 1120px; margin: 0 auto;
+  }
+  .logo{ display:flex; align-items:center; gap:10px; font-family:'Space Grotesk', sans-serif; font-size:19px; font-weight:700; letter-spacing: 0.01em; }
+  .logo img{ width:32px; height:32px; border-radius:8px; object-fit:cover; }
+  .pill{
+    background: var(--lime); color: #10140A; border:none;
+    font-family:'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px;
+    padding: 12px 22px; border-radius: 999px; cursor:pointer; text-decoration:none;
+    display:inline-block; transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 0 0 0 var(--lime-glow);
+  }
+  .pill:hover{ box-shadow: 0 0 24px 2px var(--lime-glow); }
+  .pill.outline{
+    background: transparent; color: var(--ink); border: 1px solid var(--border-strong);
+    box-shadow:none;
+  }
+  .pill.outline:hover{ border-color: var(--ink-dim); }
+  .pill:disabled{ opacity:0.35; cursor:not-allowed; box-shadow:none; }
+
+  /* hero */
+  .hero{ text-align:center; padding: 100px 32px 64px; max-width: 880px; margin: 0 auto; }
+  .hero-icon{ width:88px; height:88px; margin: 0 auto 32px; border-radius: 20px; filter: drop-shadow(0 0 28px var(--lime-glow)); }
+  h1{
+    font-family:'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(38px, 6vw, 62px); line-height: 1.08; letter-spacing:-0.01em;
+    margin-bottom: 24px; text-transform: uppercase;
+  }
+  h1 .accent{ color: var(--lime); }
+  .hero p.lede{ color: var(--ink-dim); font-size: 16px; max-width: 560px; margin: 0 auto 40px; }
+  .hero-ctas{ display:flex; gap: 14px; justify-content:center; flex-wrap:wrap; }
+
+  .countdown{ display:flex; align-items:center; justify-content:center; gap: 16px; margin-bottom: 36px; }
+  .cd-unit{ text-align:center; }
+  .cd-num{
+    font-family:'JetBrains Mono', monospace; font-size: 30px; font-weight: 600;
+    color: var(--lime); line-height:1; text-shadow: 0 0 18px var(--lime-glow);
+  }
+  .cd-label{ font-size: 10px; color: var(--ink-faint); margin-top: 6px; letter-spacing: 0.08em; }
+  .cd-sep{ color: var(--ink-faint); font-size: 24px; padding-bottom: 18px; }
+
+  /* gallery */
+  section{ padding: 64px 32px; max-width: 1120px; margin: 0 auto; }
+  .section-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 28px; }
+  .section-head h2{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:24px; }
+  .section-tag{ font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--lime); letter-spacing: 0.04em; }
+  .gallery-grid{
+    display:grid; grid-template-columns: repeat(7, 1fr); gap: 10px;
+  }
+  .avatar{
+    aspect-ratio: 1; border-radius: 10px; position:relative; overflow:hidden;
+    border: 1px solid var(--border); background: #D7FF3D;
+  }
+  .avatar img{ width:100%; height:100%; object-fit: cover; display:block; }
+  .avatar-tag{
+    position:absolute; top:6px; left:6px; font-family:'JetBrains Mono', monospace;
+    font-size: 9px; background: rgba(0,0,0,0.55); color: var(--lime); padding: 2px 6px;
+    border-radius: 3px; letter-spacing: 0.03em; backdrop-filter: blur(2px);
+  }
+  .gallery-note{ text-align:center; color: var(--ink-faint); font-size: 13px; margin-top: 22px; }
+
+  /* traits */
+  .traits-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .trait{ background: var(--bg-card); padding: 26px 22px; }
+  .trait .n{ font-family:'JetBrains Mono', monospace; font-size: 24px; color: var(--lime); margin-bottom: 4px; }
+  .trait .l{ font-size: 13px; color: var(--ink-dim); }
+
+  /* whitelist wizard */
+  .wl-section{ max-width: 720px; }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; color: var(--lime); font-size: 13px; letter-spacing:0.06em; margin-bottom: 16px; }
+  .wl-section h2{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size: 34px; margin-bottom: 14px; }
+  .wl-section > p{ color: var(--ink-dim); font-size: 15px; margin-bottom: 40px; max-width: 480px; }
+
+  .steps{ display:flex; align-items:center; margin-bottom: 32px; }
+  .step-tab{ font-family:'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-faint); white-space:nowrap; }
+  .step-tab.active{ color: var(--lime); }
+  .step-tab.done{ color: var(--lime); }
+  .step-line{ flex:1; height:1px; background: var(--border); margin: 0 14px; }
+  .step-line.done{ background: var(--lime-dim); }
+
+  .task-heading{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size: 24px; margin-bottom: 10px; }
+  .task-subtext{ color: var(--ink-dim); font-size: 14px; margin-bottom: 24px; max-width: 480px; }
+  .task-subtext strong{ color: var(--ink); font-weight: 600; }
+  .task-subtext .hl{ color: var(--lime); font-weight: 700; }
+
+  .task-item{
+    display:flex; align-items:center; gap: 14px;
+    padding: 16px 0; border-top: 1px solid var(--border);
+  }
+  .task-item:first-of-type{ border-top: none; }
+  .task-check{
+    width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border-strong);
+    background: transparent; flex-shrink:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .task-check .check-mark{ opacity:0; color: #10140A; font-size: 15px; }
+  .task-check.done{ background: var(--lime); border-color: var(--lime); }
+  .task-check.done .check-mark{ opacity:1; }
+  .task-copy{ flex:1; }
+  .task-title{ font-size: 15px; font-weight: 600; }
+  .task-sub{ font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+  .task-go{
+    background: transparent; border: 1px solid var(--border-strong); color: var(--ink);
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size: 13px;
+    padding: 9px 18px; border-radius: 999px; cursor:pointer; flex-shrink:0;
+  }
+  .task-go.done{ background: var(--lime); border-color: var(--lime); color: #10140A; }
+
+  .progress-row{ display:flex; align-items:center; gap: 16px; margin: 24px 0 6px; }
+  .progress-track{ flex:1; height: 4px; background: var(--border-strong); border-radius: 2px; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background: var(--lime); transition: width 0.2s ease; }
+  .progress-label{ font-family:'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-dim); white-space:nowrap; }
+
+  .warning-box{
+    display:flex; gap: 10px; align-items:flex-start;
+    border: 1px solid rgba(255, 107, 94, 0.35); background: rgba(255, 107, 94, 0.06);
+    border-radius: 8px; padding: 14px 16px; margin-top: 20px;
+    font-size: 13px; color: var(--ink-dim); line-height:1.5;
+  }
+  .warning-box strong{ color: var(--danger); }
+  .warning-icon{ color: var(--danger); flex-shrink:0; }
+
+  .wizard-card{
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 36px;
+  }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+  .field{ margin-bottom: 18px; }
+  .field label{ display:block; font-size: 12px; color: var(--ink-dim); text-transform:uppercase; letter-spacing:0.04em; margin-bottom: 10px; }
+  .input-row{ position:relative; }
+  .field input{
+    width: 100%; background: var(--bg-raised); border: 1px solid var(--border-strong);
+    color: var(--ink); padding: 14px 40px 14px 16px; border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 15px; outline: none;
+  }
+  .field input.mono{ font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .field input:focus{ border-color: var(--lime); }
+  .field .err{ color: var(--danger); font-size: 12px; margin-top: 8px; display:none; }
+  .field.invalid input{ border-color: var(--danger); }
+  .field.invalid .err{ display:block; }
+  .clear-x{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    color: var(--ink-faint); cursor:pointer; font-size:14px; background:none; border:none;
+  }
+  .field-note{ font-size: 13px; color: var(--ink-faint); margin-top: 12px; }
+
+  .task-row{
+    display:flex; align-items:center; justify-content:space-between; gap: 12px;
+    background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 12px;
+  }
+  .task-title{ font-size: 14px; }
+  .task-btn{
+    background: transparent; border: 1px solid var(--border-strong); color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif; font-weight:600; font-size: 13px; padding: 9px 16px;
+    border-radius: 999px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  .task-btn.done{ background: var(--lime-glow); border-color: var(--lime-dim); color: var(--lime); }
+
+  .wizard-nav{ display:flex; justify-content:space-between; align-items:center; margin-top: 28px; gap:12px; }
+  .btn-back{ background:none; border:none; color: var(--ink-dim); font-size:14px; cursor:pointer; font-family:'Inter',sans-serif; }
+  .btn-back:hover{ color: var(--ink); }
+
+  .success-box{ display:none; text-align:center; padding: 20px 0; }
+  .success-box.show{ display:block; }
+  .success-box .check{
+    width: 48px; height: 48px; border-radius: 50%; background: var(--lime-glow);
+    display:flex; align-items:center; justify-content:center; margin: 0 auto 18px;
+    color: var(--lime); font-size: 22px;
+  }
+  .success-box h3{ font-family:'Space Grotesk', sans-serif; font-size:19px; margin-bottom:8px; }
+  .success-box p{ color: var(--ink-dim); font-size: 14px; }
+
+  /* roadmap */
+  .roadmap{ display:flex; flex-direction:column; }
+  .r-item{ display:grid; grid-template-columns: 90px 1fr; gap: 24px; padding: 22px 0; border-top: 1px solid var(--border); }
+  .r-item:first-child{ border-top:none; }
+  .r-phase{ font-family:'JetBrains Mono', monospace; color: var(--ink-faint); font-size: 13px; padding-top: 2px; }
+  .r-item.active .r-phase{ color: var(--lime); }
+  .r-body h3{ font-family:'Space Grotesk', sans-serif; font-size: 16px; font-weight:600; margin-bottom: 4px; }
+  .r-body p{ font-size: 14px; color: var(--ink-dim); }
+
+  /* faq */
+  .faq-item{ border-top: 1px solid var(--border); }
+  .faq-item:last-child{ border-bottom: 1px solid var(--border); }
+  .faq-q{ display:flex; justify-content:space-between; align-items:center; padding: 20px 0; cursor:pointer; font-size: 15px; font-weight: 500; font-family:'Space Grotesk',sans-serif; }
+  .faq-q .plus{ color: var(--lime-dim); font-family:'JetBrains Mono', monospace; font-size: 18px; transition: transform 0.15s ease; }
+  .faq-item.open .plus{ transform: rotate(45deg); color:var(--lime); }
+  .faq-a{ max-height:0; overflow:hidden; transition: max-height 0.2s ease; }
+  .faq-item.open .faq-a{ max-height: 200px; }
+  .faq-a p{ padding-bottom: 20px; color: var(--ink-dim); font-size: 14px; max-width: 560px; }
+
+  footer{ padding: 40px 32px 60px; max-width: 1120px; margin: 0 auto; border-top: 1px solid var(--border); display:flex; justify-content:space-between; color: var(--ink-faint); font-size: 13px; }
+  footer .socials a{ color: var(--ink-dim); text-decoration:none; margin-left: 20px; font-size:13px; display:inline-flex; align-items:center; gap:6px; }
+  footer .socials a:hover{ color: var(--lime); }
+  footer .socials svg{ width:14px; height:14px; }
+
+  @media (max-width: 720px){
+    .gallery-grid{ grid-template-columns: repeat(3, 1fr); }
+    .traits-grid{ grid-template-columns: repeat(2, 1fr); }
+    .wizard-card{ padding: 24px; }
+    .steps{ overflow-x:auto; }
+    footer{ flex-direction:column; gap:14px; }
+  }
+</style>
+</head>
+<body class="locked">
+
+<canvas id="bg-fx"></canvas>
+<canvas id="touch-fx"></canvas>
+
+
+<div id="intro-screen">
+  <div class="intro-line"><span id="intro-text"></span><span class="intro-cursor"></span></div>
+</div>
+
+
+<nav>
+  <div class="logo">
+    <img src="assets/logo.png" alt="Street Born logo">
+    STREET BORN
+  </div>
+  <a href="#whitelist" class="pill">Claim Whitelist</a>
+</nav>
+
+<div class="hero">
+  <img class="hero-icon" src="assets/logo.png" alt="Street Born logo">
+  <h1>Forged on the block, <span class="accent">born on the street.</span></h1>
+  <p class="lede">11,111 generative pieces pulled from raw street culture and on-chain code. Same rules, different story on every head.</p>
+  <div class="countdown">
+    <div class="cd-unit"><div class="cd-num" id="cd-hours">48</div><div class="cd-label">HOURS</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><div class="cd-num" id="cd-mins">00</div><div class="cd-label">MINUTES</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><div class="cd-num" id="cd-secs">00</div><div class="cd-label">SECONDS</div></div>
+  </div>
+  <div class="hero-ctas">
+    <a href="#whitelist" class="pill">Claim Whitelist</a>
+    <a href="#gallery" class="pill outline">View the Gallery</a>
+  </div>
+</div>
+
+<section id="gallery">
+  <div class="section-head">
+    <h2>Gallery</h2>
+    <div class="section-tag">11,111 COLLECTION</div>
+  </div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+  <div class="gallery-note">21 previews from the 11,111 — more drops before mint.</div>
+</section>
+
+<section>
+  <div class="traits-grid">
+    <div class="trait"><div class="n">11,111</div><div class="l">total supply</div></div>
+    <div class="trait"><div class="n">6</div><div class="l">base builds</div></div>
+    <div class="trait"><div class="n">40+</div><div class="l">trait layers</div></div>
+    <div class="trait"><div class="n">0.001 Ξ</div><div class="l">whitelist price</div></div>
+    <div class="trait"><div class="n">0.003 Ξ</div><div class="l">public price</div></div>
+    <div class="trait"><div class="n">3</div><div class="l">per wallet max</div></div>
+  </div>
+</section>
+
+<section id="whitelist" class="wl-section">
+  <div class="eyebrow">CLAIM WHITELIST</div>
+  <h2>Claim your whitelist spot.</h2>
+  <p>One handle, a few moves, one wallet — that's what it takes to lock in a spot before Street Born mints.</p>
+
+  <div class="steps">
+    <div class="step-tab active" id="tab-1">01 HANDLE</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-tab" id="tab-2">02 TASKS</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-tab" id="tab-3">03 WALLET</div>
+  </div>
+
+  <div class="wizard-card">
+
+    <div class="panel active" id="panel-1">
+      <div class="field" id="field-handle">
+        <label for="handle">Your X handle</label>
+        <div class="input-row">
+          <input type="text" id="handle" placeholder="@x">
+          <button type="button" class="clear-x" onclick="document.getElementById('handle').value=''">✕</button>
+        </div>
+        <div class="err">Enter a handle starting with @.</div>
+      </div>
+      <p class="field-note">We'll match your spot to this handle once your tasks are verified.</p>
+      <div class="wizard-nav">
+        <span></span>
+        <button type="button" class="pill" id="btn-step1-continue">Continue</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-2">
+      <h3 class="task-heading">Put the word out.</h3>
+      <p class="task-subtext"><strong>Four moves</strong> on <span class="hl">X</span> — each opens in a new tab and <strong>checks itself off</strong> when you're back.</p>
+
+      <div class="task-item">
+        <button type="button" class="task-check" data-task="follow"><span class="check-mark">✓</span></button>
+        <div class="task-copy">
+          <div class="task-title">Follow @StreetBorn</div>
+          <div class="task-sub">Front row for the drop</div>
+        </div>
+        <button type="button" class="task-go" data-task="follow" data-url="https://x.com/StreetBornRH">Go</button>
+      </div>
+      <div class="task-item">
+        <button type="button" class="task-check" data-task="like"><span class="check-mark">✓</span></button>
+        <div class="task-copy">
+          <div class="task-title">Like and retweet the pinned post</div>
+          <div class="task-sub">The whitelist announcement</div>
+        </div>
+        <button type="button" class="task-go" data-task="like" data-url="">Go</button>
+      </div>
+      <div class="task-item">
+        <button type="button" class="task-check" data-task="quote"><span class="check-mark">✓</span></button>
+        <div class="task-copy">
+          <div class="task-title">Quote retweet the post</div>
+          <div class="task-sub">Put it on your timeline with your take</div>
+        </div>
+        <button type="button" class="task-go" data-task="quote" data-url="">Go</button>
+      </div>
+      <div class="task-item">
+        <button type="button" class="task-check" data-task="comment"><span class="check-mark">✓</span></button>
+        <div class="task-copy">
+          <div class="task-title">Comment your wallet</div>
+          <div class="task-sub">Reply on the pinned post with your address</div>
+        </div>
+        <button type="button" class="task-go" data-task="comment" data-url="">Go</button>
+      </div>
+
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-label" id="progress-label">0 of 4</div>
+      </div>
+
+      <div class="wizard-nav">
+        <button type="button" class="btn-back" id="btn-step2-back">Back</button>
+        <button type="button" class="pill" id="btn-step2-continue" disabled>Continue</button>
+      </div>
+
+      <div class="warning-box">
+        <span class="warning-icon">⚠</span>
+        <span><strong>Heads up:</strong> every task gets checked before mint. Fake a task and you're pulled from the list.</span>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-3">
+      <div class="field" id="field-email">
+        <label for="email">Gmail address</label>
+        <input type="text" id="email" placeholder="you@gmail.com">
+        <div class="err">Enter a valid Gmail address.</div>
+      </div>
+      <div class="field" id="field-wallet">
+        <label for="wallet">Wallet address (ETH)</label>
+        <input type="text" class="mono" id="wallet" placeholder="0x...">
+        <div class="err">Enter a valid Ethereum address (0x followed by 40 characters).</div>
+      </div>
+      <p class="field-note">Double-check your wallet address before submitting — it can't be edited after you apply.</p>
+      <div class="wizard-nav">
+        <button type="button" class="btn-back" id="btn-step3-back">Back</button>
+        <button type="button" class="pill" id="btn-submit">Submit application</button>
+      </div>
+    </div>
+
+    <div class="success-box" id="success-box">
+      <div class="check">✓</div>
+      <h3>Application received</h3>
+      <p>We'll email you if you're approved, before the public countdown ends.</p>
+    </div>
+
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="section-head"><h2>Roadmap</h2></div>
+  <div class="roadmap">
+    <div class="r-item active">
+      <div class="r-phase">NOW</div>
+      <div class="r-body"><h3>Whitelist applications</h3><p>Applications open and reviewed on a rolling basis until spots fill.</p></div>
+    </div>
+    <div class="r-item">
+      <div class="r-phase">NEXT</div>
+      <div class="r-body"><h3>Whitelist mint</h3><p>Approved wallets get a private minting window at 0.001 ETH.</p></div>
+    </div>
+    <div class="r-item">
+      <div class="r-phase">THEN</div>
+      <div class="r-body"><h3>Public mint</h3><p>Remaining supply opens to the public at 0.003 ETH.</p></div>
+    </div>
+    <div class="r-item">
+      <div class="r-phase">AFTER</div>
+      <div class="r-body"><h3>Reveal and street gallery</h3><p>Final artwork is revealed and the on-chain gallery goes live for holders.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="section-head"><h2>Frequently asked</h2></div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I get whitelisted?<span class="plus">+</span></div>
+      <div class="faq-a"><p>Enter your X handle, complete the follow/like/repost/comment tasks, then submit your Gmail and wallet address. Approved applicants are notified before the private mint window opens.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use the same wallet twice?<span class="plus">+</span></div>
+      <div class="faq-a"><p>No. Each wallet address can hold one whitelist spot, and duplicate submissions are filtered out during review.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What happens if I miss the whitelist window?<span class="plus">+</span></div>
+      <div class="faq-a"><p>You can still mint during the public sale at 0.003 ETH, as long as supply remains.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>STREET BORN © 2026</span>
+  <span class="socials"><a href="#">X</a><a href="#">Discord</a><a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm4.6 10.6l-3.1 4.9a.6.6 0 01-1 0L9.4 12.6a.4.4 0 01.1-.5l1.6-1a.4.4 0 01.5 0l1.9 1.2 2.5-4a.4.4 0 01.6-.1l1.9 1.4a.4.4 0 01.1.6z"/></svg>OpenSea</a></span>
+</footer>
+
+<script>
+  // Intro: type out the project name on load, then reveal the site
+  (function(){
+    const text = 'STREET BORN';
+    const el = document.getElementById('intro-text');
+    const screen = document.getElementById('intro-screen');
+    let i = 0;
+    function type(){
+      if(i <= text.length){
+        el.textContent = text.slice(0, i);
+        i++;
+        setTimeout(type, 90);
+      } else {
+        setTimeout(() => {
+          screen.classList.add('hide');
+          document.body.classList.remove('locked');
+          setTimeout(() => screen.remove(), 650);
+        }, 400);
+      }
+    }
+    type();
+  })();
+
+  // Countdown — fixed to one real calendar deadline, so EVERY visitor sees the
+  // exact same time (not each visitor's own first-visit time), and refreshing
+  // never resets it either.
+  (function(){
+    // Reference point — set this once to when you want the clock to have
+    // started (e.g. your launch moment). Leave it alone after that.
+    const COUNTDOWN_START = new Date('2026-09-06T00:00:00Z').getTime();
+    // Change ONLY this number to change the countdown length for everyone.
+    const DURATION_HOURS = 120;
+
+    const endTime = COUNTDOWN_START + DURATION_HOURS * 60 * 60 * 1000;
+
+    const hEl = document.getElementById('cd-hours');
+    const mEl = document.getElementById('cd-mins');
+    const sEl = document.getElementById('cd-secs');
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+      let remaining = Math.floor((endTime - Date.now()) / 1000);
+      if(remaining < 0) remaining = 0;
+      const h = Math.floor(remaining / 3600);
+      const m = Math.floor((remaining % 3600) / 60);
+      const s = remaining % 60;
+      hEl.textContent = pad(h);
+      mEl.textContent = pad(m);
+      sEl.textContent = pad(s);
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  // Ambient background — always-on falling snow, colored to the site's lime/ink palette
+  (function(){
+    const canvas = document.getElementById('bg-fx');
+    const ctx = canvas.getContext('2d');
+    let flakes = [];
+
+    // rgba bases matching :root colors — ALPHA is swapped in per-frame
+    const palette = [
+      'rgba(215,255,61,ALPHA)',   // --lime
+      'rgba(245,245,240,ALPHA)',  // --ink
+      'rgba(138,158,42,ALPHA)'    // --lime-dim
+    ];
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function spawnFlake(){
+      flakes.push({
+        x: Math.random() * canvas.width,
+        y: -10,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: Math.random() * 0.7 + 0.3,
+        r: Math.random() * 2.2 + 0.7,
+        drift: Math.random() * 0.02 + 0.005,
+        angle: Math.random() * Math.PI * 2,
+        color: palette[Math.floor(Math.random() * palette.length)],
+        life: 1,
+        fade: Math.random() * 0.0015 + 0.0006
+      });
+    }
+
+    function loop(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if(Math.random() < 0.5 && flakes.length < 140) spawnFlake();
+
+      flakes.forEach(p => {
+        p.angle += p.drift;
+        p.x += p.vx + Math.sin(p.angle) * 0.3;
+        p.y += p.vy;
+        p.life -= p.fade;
+        const alpha = Math.max(p.life, 0) * 0.55;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color.replace('ALPHA', alpha);
+        ctx.shadowColor = 'rgba(215,255,61,0.35)';
+        ctx.shadowBlur = 4;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      flakes = flakes.filter(p => p.life > 0 && p.y < canvas.height + 20);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+
+  // Cursor/touch trail (unchanged) + click burst — each click cycles through a
+  // different animation style (radial / spiral / shatter / confetti / ring)
+  // instead of repeating the same effect every time.
+  (function(){
+    const canvas = document.getElementById('touch-fx');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let ripples = [];
+
+    const CLICK_COLOR = 'rgba(215,255,61,ALPHA)';
+    const confettiPalette = [
+      'rgba(215,255,61,ALPHA)',   // lime
+      'rgba(245,245,240,ALPHA)',  // ink
+      'rgba(138,158,42,ALPHA)'    // lime-dim
+    ];
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function spawn(x, y){
+      for(let i=0; i<3; i++){
+        particles.push({
+          x, y,
+          vx: (Math.random()-0.5) * 1.4,
+          vy: (Math.random()-0.5) * 1.4,
+          r: Math.random() * 2.5 + 1,
+          life: 1, fade: 0.02, damp: 0.98,
+          color: CLICK_COLOR, shape: 'circle'
+        });
+      }
+    }
+
+    // -- five distinct click animations --
+
+    function burstRadial(x, y){
+      const count = 26;
+      for(let i=0; i<count; i++){
+        const angle = (Math.PI * 2 / count) * i + Math.random() * 0.15;
+        const speed = Math.random() * 3.2 + 1.6;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          r: Math.random() * 2.4 + 1.4,
+          life: 1, fade: 0.02, damp: 0.98,
+          color: CLICK_COLOR, shape: 'circle'
+        });
+      }
+      ripples.push({ x, y, r: 4, life: 1, growth: 2.6, width: 1.5, color: CLICK_COLOR });
+    }
+
+    function burstSpiral(x, y){
+      const count = 30;
+      for(let i=0; i<count; i++){
+        const angle = (Math.PI * 2 / count) * i;
+        const speed = Math.random() * 2 + 1.4;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          r: Math.random() * 2 + 1.2,
+          life: 1, fade: 0.016, damp: 0.985,
+          spin: (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 0.12 + 0.06),
+          color: CLICK_COLOR, shape: 'circle'
+        });
+      }
+    }
+
+    function burstShatter(x, y){
+      const count = 16;
+      for(let i=0; i<count; i++){
+        const angle = (Math.PI * 2 / count) * i + Math.random() * 0.3;
+        const speed = Math.random() * 4 + 2;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          r: Math.random() * 3 + 2,
+          life: 1, fade: 0.025, damp: 0.94,
+          rotation: Math.random() * Math.PI,
+          rot_v: (Math.random() - 0.5) * 0.3,
+          color: CLICK_COLOR, shape: 'square'
+        });
+      }
+    }
+
+    function burstConfetti(x, y){
+      const count = 22;
+      for(let i=0; i<count; i++){
+        const angle = -Math.PI/2 + (Math.random() - 0.5) * Math.PI * 0.9;
+        const speed = Math.random() * 3.5 + 2;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          gravity: 0.12,
+          r: Math.random() * 2.6 + 1.6,
+          life: 1, fade: 0.012, damp: 0.99,
+          rotation: Math.random() * Math.PI,
+          rot_v: (Math.random() - 0.5) * 0.4,
+          color: confettiPalette[Math.floor(Math.random() * confettiPalette.length)],
+          shape: 'square'
+        });
+      }
+    }
+
+    function burstRing(x, y){
+      ripples.push({ x, y, r: 2, life: 1, growth: 3.4, width: 2.5, color: CLICK_COLOR });
+      ripples.push({ x, y, r: 2, life: 1, growth: 1.8, width: 1, color: CLICK_COLOR, delay: 0.15 });
+      for(let i=0; i<10; i++){
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 1.2 + 0.4;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          r: Math.random() * 1.8 + 0.8,
+          life: 1, fade: 0.02, damp: 0.97,
+          color: CLICK_COLOR, shape: 'circle'
+        });
+      }
+    }
+
+    const burstTypes = [burstRadial, burstSpiral, burstShatter, burstConfetti, burstRing];
+    let typeQueue = [];
+    function nextBurst(){
+      if(typeQueue.length === 0) typeQueue = [...burstTypes].sort(() => Math.random() - 0.5);
+      return typeQueue.pop();
+    }
+    function spawnBurst(x, y){
+      nextBurst()(x, y);
+    }
+
+    function handleMove(e){
+      const points = e.touches ? Array.from(e.touches) : [e];
+      points.forEach(p => spawn(p.clientX, p.clientY));
+    }
+    function handleClick(e){
+      const points = e.changedTouches ? Array.from(e.changedTouches) : [e];
+      points.forEach(p => spawnBurst(p.clientX, p.clientY));
+    }
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', handleMove, { passive: true });
+    window.addEventListener('touchstart', handleMove, { passive: true });
+    window.addEventListener('click', handleClick);
+    window.addEventListener('touchend', handleClick, { passive: true });
+
+    function loop(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        if(p.gravity) p.vy += p.gravity;
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= (p.damp ?? 0.98); p.vy *= (p.damp ?? 0.98);
+        p.life -= (p.fade ?? 0.02);
+        if(p.spin) { const a = Math.atan2(p.vy, p.vx) + p.spin; const m = Math.hypot(p.vx, p.vy); p.vx = Math.cos(a) * m; p.vy = Math.sin(a) * m; }
+        if(p.rot_v) p.rotation = (p.rotation || 0) + p.rot_v;
+
+        const alpha = Math.max(p.life, 0) * 0.65;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        if(p.rotation) ctx.rotate(p.rotation);
+        ctx.fillStyle = p.color.replace('ALPHA', alpha);
+        if(p.shape === 'square'){
+          ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 2);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+      particles = particles.filter(p => p.life > 0);
+
+      ripples.forEach(r => {
+        if(r.delay && r.delay > 0){ r.delay -= 0.02; return; }
+        r.r += r.growth ?? 2.6; r.life -= 0.035;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI*2);
+        ctx.strokeStyle = r.color.replace('ALPHA', Math.max(r.life,0) * 0.5);
+        ctx.lineWidth = r.width ?? 1.5;
+        ctx.stroke();
+      });
+      ripples = ripples.filter(r => r.life > 0);
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+
+  // Gallery: real collection previews
+  const tags = ['OG','LIVE','MINTED','WL','REC','NEW','RARE'];
+  const grid = document.getElementById('gallery-grid');
+  for(let i=1;i<=21;i++){
+    const num = String(i).padStart(2,'0');
+    const showTag = i % 4 === 0;
+    const div = document.createElement('div');
+    div.className = 'avatar';
+    div.innerHTML = `
+      <img src="assets/avatar-${num}.png" alt="Street Born #${num}" loading="lazy">
+      ${showTag ? `<div class="avatar-tag">${tags[i % tags.length]}</div>` : ''}
+    `;
+    grid.appendChild(div);
+  }
+
+  // Wizard step control
+  let currentStep = 1;
+  const tabs = { 1: document.getElementById('tab-1'), 2: document.getElementById('tab-2'), 3: document.getElementById('tab-3') };
+  const lines = { 1: document.getElementById('line-1'), 2: document.getElementById('line-2') };
+  const panels = { 1: document.getElementById('panel-1'), 2: document.getElementById('panel-2'), 3: document.getElementById('panel-3') };
+
+  function goToStep(n){
+    currentStep = n;
+    [1,2,3].forEach(i => {
+      panels[i].classList.toggle('active', i === n);
+      tabs[i].classList.toggle('active', i === n);
+      tabs[i].classList.toggle('done', i < n);
+    });
+    tabs[1].textContent = n > 1 ? '✓ HANDLE' : '01 HANDLE';
+    tabs[2].textContent = n > 2 ? '✓ TASKS' : '02 TASKS';
+    lines[1].classList.toggle('done', n > 1);
+    lines[2].classList.toggle('done', n > 2);
+  }
+
+  document.getElementById('btn-step1-continue').addEventListener('click', function(){
+    const field = document.getElementById('field-handle');
+    const input = document.getElementById('handle');
+    if(!/^@\w{2,}$/.test(input.value.trim())){
+      field.classList.add('invalid'); return;
+    }
+    field.classList.remove('invalid');
+    goToStep(2);
+  });
+
+  document.getElementById('btn-step2-back').addEventListener('click', () => goToStep(1));
+  document.getElementById('btn-step3-back').addEventListener('click', () => goToStep(2));
+
+  const taskState = { follow:false, like:false, comment:false, quote:false };
+  const step2Continue = document.getElementById('btn-step2-continue');
+  const progressFill = document.getElementById('progress-fill');
+  const progressLabel = document.getElementById('progress-label');
+  const totalTasks = Object.keys(taskState).length;
+
+  function markDone(key){
+    taskState[key] = true;
+    document.querySelectorAll(`[data-task="${key}"]`).forEach(el => el.classList.add('done'));
+    const goBtn = document.querySelector(`.task-go[data-task="${key}"]`);
+    if(goBtn) goBtn.textContent = 'Done';
+
+    const doneCount = Object.values(taskState).filter(Boolean).length;
+    progressFill.style.width = (doneCount / totalTasks * 100) + '%';
+    progressLabel.textContent = `${doneCount} of ${totalTasks}`;
+
+    const allDone = doneCount === totalTasks;
+    step2Continue.disabled = !allDone;
+    step2Continue.textContent = allDone ? 'Continue' : 'Continue';
+  }
+
+  // Checkbox: lets you manually mark a task done
+  document.querySelectorAll('.task-check[data-task]').forEach(btn => {
+    btn.addEventListener('click', function(){
+      markDone(btn.getAttribute('data-task'));
+    });
+  });
+
+  // Go button: opens the task link in a new tab, then marks it done automatically.
+  // To wire up a task's link later, just set its data-url="https://..." in the HTML.
+  document.querySelectorAll('.task-go[data-task]').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const key = btn.getAttribute('data-task');
+      const url = btn.getAttribute('data-url');
+      if(url) window.open(url, '_blank', 'noopener');
+      markDone(key);
+    });
+  });
+
+  step2Continue.addEventListener('click', function(){
+    if(!step2Continue.disabled) goToStep(3);
+  });
+
+  // Google Apps Script Web App URL — deploy the script as "Execute as: Me",
+  // "Who has access: Anyone", and it needs a doPost(e) function that reads
+  // e.parameter.handle / e.parameter.email / e.parameter.wallet and appends
+  // a row to your Sheet.
+  const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzF3inAg2Eh24b18XwqGIz1szzujI26lg_dpdURqp37QrUha7BZQdUJdjGs3g6oHtvi/exec';
+
+  document.getElementById('btn-submit').addEventListener('click', function(){
+    let valid = true;
+    const emailField = document.getElementById('field-email');
+    const emailInput = document.getElementById('email');
+    if(!/^[^\s@]+@gmail\.com$/i.test(emailInput.value.trim())){
+      emailField.classList.add('invalid'); valid = false;
+    } else emailField.classList.remove('invalid');
+
+    const walletField = document.getElementById('field-wallet');
+    const walletInput = document.getElementById('wallet');
+    if(!/^0x[a-fA-F0-9]{40}$/.test(walletInput.value.trim())){
+      walletField.classList.add('invalid'); valid = false;
+    } else walletField.classList.remove('invalid');
+
+    if(!valid) return;
+
+    const submitBtn = this;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    const payload = new URLSearchParams({
+      handle: document.getElementById('handle').value.trim(),
+      email: emailInput.value.trim(),
+      wallet: walletInput.value.trim(),
+      timestamp: new Date().toISOString()
+    });
+
+    // Apps Script web app responses aren't readable cross-origin with fetch,
+    // so this is fire-and-forget: mode "no-cors" still delivers the POST and
+    // runs doPost() server-side, it just returns an opaque response we can't
+    // inspect. That's the standard (and only) way to call it from a static page.
+    fetch(SHEET_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: payload
+    })
+    .then(() => {
+      panels[3].style.display = 'none';
+      document.querySelector('.steps').style.display = 'none';
+      document.getElementById('success-box').classList.add('show');
+    })
+    .catch(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+      walletField.classList.add('invalid');
+      walletField.querySelector('.err').textContent = 'Something went wrong sending your application — check your connection and try again.';
+    });
+  });
+</script>
+
+</body>
+</html>
