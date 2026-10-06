@@ -86,6 +86,49 @@
   .pill.outline:hover{ border-color: var(--ink-dim); }
   .pill:disabled{ opacity:0.35; cursor:not-allowed; box-shadow:none; }
 
+  /* menu */
+  #site-nav{ z-index: 60 !important; }
+  .nav-right{ display:flex; align-items:center; gap:12px; }
+  .menu-btn{
+    width:44px; height:44px; border-radius:12px; border:1px solid var(--border-strong);
+    background: transparent; cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:5px; transition: border-color 0.15s ease;
+  }
+  .menu-btn:hover{ border-color: var(--lime); }
+  .menu-btn span{ width:20px; height:2px; background: var(--ink); border-radius:2px; }
+  .menu-overlay{
+    position:fixed; inset:0; background: rgba(0,0,0,0.65); opacity:0; pointer-events:none;
+    transition: opacity 0.25s ease; z-index: 90;
+  }
+  .menu-overlay.open{ opacity:1; pointer-events:auto; }
+  .menu-drawer{
+    position:fixed; top:0; right:0; height:100%; width:min(340px, 86vw);
+    background: var(--bg-card); border-left: 1px solid var(--border-strong);
+    transform: translateX(100%); transition: transform 0.28s ease; z-index: 100;
+    padding: 24px; display:flex; flex-direction:column; overflow-y:auto;
+  }
+  .menu-drawer.open{ transform: none; }
+  .menu-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 22px; }
+  .menu-close{ background:none; border:1px solid var(--border-strong); color: var(--ink); width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:14px; }
+  .menu-close:hover{ border-color: var(--lime); color: var(--lime); }
+  .menu-item{
+    display:flex; align-items:center; gap:16px; padding:18px 4px; border-top:1px solid var(--border);
+    color: var(--ink); text-decoration:none; font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:18px;
+    transition: color 0.15s ease, padding-left 0.15s ease;
+  }
+  .menu-list .menu-item:first-child{ border-top:none; }
+  a.menu-item:hover{ color: var(--lime); padding-left: 10px; }
+  .mi-n{ font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--ink-faint); font-weight:400; width:22px; }
+  .mi-t{ flex:1; }
+  .mi-t small{ display:block; font-family:'Inter', sans-serif; font-weight:400; font-size:12px; color: var(--ink-faint); margin-top:2px; }
+  .menu-item.disabled{ color: var(--ink-dim); cursor:not-allowed; }
+  .mi-badge{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; font-weight:500;
+    color: var(--lime); border:1px solid var(--lime-dim); background: var(--lime-glow);
+    padding:3px 8px; border-radius:999px;
+  }
+  body.menu-open{ overflow:hidden; }
+
   /* hero */
   .hero{ text-align:center; padding: 100px 32px 64px; max-width: 880px; margin: 0 auto; }
   .hero-icon{ width:88px; height:88px; margin: 0 auto 32px; border-radius: 20px; filter: drop-shadow(0 0 28px var(--lime-glow)); }
@@ -231,6 +274,92 @@
   .success-box h3{ font-family:'Space Grotesk', sans-serif; font-size:19px; margin-bottom:8px; }
   .success-box p{ color: var(--ink-dim); font-size: 14px; }
 
+  /* GTD puzzle */
+  .gtd-label{ font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--ink-dim); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:16px; }
+  .gtd-choices{ display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .gtd-choice{
+    background: var(--bg-raised); border: 1px solid var(--border-strong); border-radius: 12px;
+    padding: 8px 8px 10px; cursor:pointer; color: var(--ink); text-align:center;
+    font-family:'JetBrains Mono', monospace; font-size: 11px;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .gtd-choice img{ width:100%; aspect-ratio:1; border-radius:8px; display:block; object-fit:cover; background:#D7FF3D; margin-bottom:8px; }
+  .gtd-choice:hover{ border-color: var(--lime); transform: translateY(-3px); box-shadow: 0 8px 24px var(--lime-glow); }
+
+  .gtd-top{ display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+  .gtd-ref{ width:64px; height:64px; border-radius:10px; border:1px solid var(--border-strong); background:#D7FF3D; object-fit:cover; flex-shrink:0; }
+  .gtd-meta{ flex:1; min-width:150px; }
+  .gtd-name{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:18px; }
+  .gtd-sub{ font-size:12px; color: var(--ink-dim); margin-top:2px; }
+  .gtd-stats{ display:flex; gap:18px; font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--ink-dim); }
+  .gtd-stats b{ color: var(--lime); font-weight:500; font-size:14px; margin-left:4px; }
+
+  .gtd-stage{ position:relative; width:100%; max-width:420px; margin:0 auto; }
+  .gtd-board{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:4px; padding:4px;
+    width:100%; aspect-ratio:1;
+    background: var(--bg-raised); border:1px solid var(--border-strong); border-radius:14px;
+    touch-action: manipulation; transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .gtd-piece{
+    position:relative; border:0; padding:0; border-radius:8px; cursor:pointer;
+    background-color:#D7FF3D; background-repeat:no-repeat; background-size:300% 300%;
+    outline: 2px solid transparent; outline-offset:-2px;
+    transition: transform 0.12s ease, outline-color 0.12s ease;
+  }
+  .gtd-piece:hover{ outline-color: var(--lime-dim); }
+  .gtd-piece.sel{ outline-color:#fff; transform: scale(0.93); box-shadow: 0 0 0 2px var(--lime), 0 0 20px var(--lime-glow); z-index:1; }
+  .gtd-piece.pop{ animation: gtd-pop 0.22s ease; }
+  @keyframes gtd-pop{ 50%{ transform: scale(0.88); } }
+  .gtd-board.show-nums .gtd-piece::after{
+    content: attr(data-n); position:absolute; top:6px; left:6px;
+    font: 500 11px 'JetBrains Mono', monospace; background: rgba(0,0,0,0.7); color: var(--lime);
+    padding: 1px 7px; border-radius: 4px;
+  }
+  .gtd-board.solved{ gap:0; padding:0; overflow:hidden; pointer-events:none; border-color: var(--lime); box-shadow: 0 0 40px var(--lime-glow); }
+  .gtd-board.solved .gtd-piece{ border-radius:0; outline:none; transform:none; box-shadow:none; }
+  .gtd-piece.empty{ visibility:hidden; }
+  .gtd-board.solved .gtd-piece.empty{ visibility:visible; }
+  .gtd-board.failed{ opacity:0.45; pointer-events:none; }
+  .gtd-board.noimg .gtd-piece{ background-image:none !important; background-color:var(--bg-raised); }
+  .gtd-board.noimg .gtd-piece::after{
+    content: attr(data-n); position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font: 700 28px 'Space Grotesk', sans-serif; color: var(--lime);
+  }
+  .gtd-reset{ margin-top:14px; }
+  .gtd-peek{
+    position:absolute; inset:0; border-radius:14px; background-color:#D7FF3D;
+    background-size:cover; background-position:center; border:1px solid var(--lime);
+    opacity:0; pointer-events:none; transition: opacity 0.2s ease;
+  }
+  .gtd-peek.on{ opacity:1; }
+  .gtd-stats b.low{ color: var(--danger); }
+  .gtd-fail{ display:none; text-align:center; margin-top:22px; padding:18px; border:1px solid rgba(255,107,94,0.35); background:rgba(255,107,94,0.06); border-radius:10px; }
+  .gtd-fail.show{ display:block; }
+  .gtd-fail h3{ font-family:'Space Grotesk', sans-serif; font-size:18px; color: var(--danger); margin-bottom:6px; }
+  .gtd-fail p{ font-size:14px; color: var(--ink-dim); }
+  .gtd-restored .gtd-top, .gtd-restored .gtd-stage, .gtd-restored .gtd-actions{ display:none; }
+  .gtd-restored .gtd-claim{ margin-top:0; padding-top:0; border-top:none; }
+  .gtd-choice:disabled{ opacity:0.35; cursor:not-allowed; transform:none; box-shadow:none; }
+  .gtd-actions{ display:flex; justify-content:flex-start; align-items:center; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .gtd-actions .left{ display:flex; gap:10px; flex-wrap:wrap; }
+  .pill.small{ padding: 9px 16px; font-size: 13px; }
+
+  .gtd-claim{ display:none; margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .gtd-claim.show{ display:block; }
+  .gtd-unlock{
+    display:flex; gap:14px; align-items:center; background: var(--lime-glow);
+    border: 1px solid var(--lime-dim); border-radius: 10px; padding: 16px 18px; margin-bottom: 22px;
+  }
+  .gtd-unlock .check{
+    width:36px; height:36px; border-radius:50%; background: var(--lime); color:#10140A;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px;
+  }
+  .gtd-unlock h3{ font-family:'Space Grotesk', sans-serif; font-size:17px; margin-bottom:2px; }
+  .gtd-unlock p{ font-size:13px; color: var(--ink-dim); }
+  .gtd-tasks .task-check{ cursor:default; }
+  .gtd-fields{ margin-top: 24px; }
+
   /* roadmap */
   .roadmap{ display:flex; flex-direction:column; }
   .r-item{ display:grid; grid-template-columns: 90px 1fr; gap: 24px; padding: 22px 0; border-top: 1px solid var(--border); }
@@ -259,6 +388,7 @@
     .gallery-grid{ grid-template-columns: repeat(3, 1fr); }
     .traits-grid{ grid-template-columns: repeat(2, 1fr); }
     .wizard-card{ padding: 24px; }
+    .gtd-choices{ grid-template-columns: repeat(3, 1fr); }
     .steps{ overflow-x:auto; }
     footer{ flex-direction:column; gap:14px; }
   }
@@ -275,12 +405,35 @@
 </div>
 
 
-<nav>
+<nav id="site-nav">
   <div class="logo">
     <img src="assets/logo.png" alt="Street Born logo">
     STREET BORN
   </div>
-  <a href="#whitelist" class="pill">Claim Whitelist</a>
+  <div class="nav-right">
+    <a href="#whitelist" class="pill">Claim Whitelist</a>
+    <button type="button" class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+
+  <div class="menu-overlay" id="menu-overlay"></div>
+  <aside class="menu-drawer" id="menu-drawer" aria-hidden="true">
+    <div class="menu-head">
+      <span class="eyebrow" style="margin:0">MENU</span>
+      <button type="button" class="menu-close" id="menu-close" aria-label="Close menu">✕</button>
+    </div>
+    <div class="menu-list">
+      <a class="menu-item" href="#gtd"><span class="mi-n">01</span><span class="mi-t">GTD Puzzle</span></a>
+      <a class="menu-item" href="#gallery"><span class="mi-n">02</span><span class="mi-t">Gallery</span></a>
+      <a class="menu-item" href="#whitelist"><span class="mi-n">03</span><span class="mi-t">Claim Whitelist</span></a>
+      <a class="menu-item" href="#roadmap"><span class="mi-n">04</span><span class="mi-t">Roadmap</span></a>
+      <a class="menu-item" href="#faq"><span class="mi-n">05</span><span class="mi-t">FAQ</span></a>
+      <div class="menu-item disabled" aria-disabled="true">
+        <span class="mi-n">06</span>
+        <span class="mi-t">Stake<small>Goes live the day after mint</small></span>
+        <span class="mi-badge">SOON</span>
+      </div>
+    </div>
+  </aside>
 </nav>
 
 <div class="hero">
@@ -289,9 +442,124 @@
   <p class="lede">11,111 generative pieces pulled from raw street culture and on-chain code. Same rules, different story on every head.</p>
   <div class="hero-ctas">
     <a href="#whitelist" class="pill">Claim Whitelist</a>
+    <a href="#gtd" class="pill outline">Solve for GTD</a>
     <a href="#gallery" class="pill outline">View the Gallery</a>
   </div>
 </div>
+
+<section id="gtd" class="wl-section">
+  <div class="eyebrow">GTD PUZZLE</div>
+  <h2>Solve the puzzle, win a GTD.</h2>
+  <p>Pick any one of five Street Borns and slide its 9 tiles back into place before the clock runs out. Solve it and you've earned a guaranteed (GTD) spot.</p>
+
+  <div class="wizard-card">
+
+    <div id="gtd-pick">
+      <div class="gtd-label">Pick your Street Born</div>
+      <div class="gtd-choices" id="gtd-choices"></div>
+      <p class="field-note" id="gtd-rules"></p>
+    </div>
+
+    <div id="gtd-play" style="display:none">
+      <div class="gtd-top">
+        <div class="gtd-meta">
+          <div class="gtd-name" id="gtd-name"></div>
+          <div class="gtd-sub">Tap a tile next to the empty space to slide it.</div>
+        </div>
+        <div class="gtd-stats"><span>MOVES<b id="gtd-moves">0</b></span><span>TIME LEFT<b id="gtd-time">00:00</b></span></div>
+      </div>
+
+      <div class="gtd-stage">
+        <div class="gtd-board" id="gtd-board"></div>
+        <div class="gtd-peek" id="gtd-peek"></div>
+      </div>
+
+      <div class="gtd-actions" id="gtd-actions">
+        <button type="button" class="pill outline small" id="gtd-peek-btn">Peek (1)</button>
+        <span class="gtd-sub" id="gtd-peek-note">One 3-second look at the full picture.</span>
+      </div>
+
+      <div class="gtd-fail" id="gtd-fail">
+        <h3>Time's up.</h3>
+        <p id="gtd-fail-msg"></p>
+        <button type="button" class="pill small" id="gtd-retry" style="display:none;margin-top:14px">Try again</button>
+      </div>
+
+      <div class="gtd-claim" id="gtd-claim">
+        <div class="gtd-unlock">
+          <div class="check">✓</div>
+          <div>
+            <h3>Puzzle solved. GTD unlocked.</h3>
+            <p>Finish the tasks below, then drop your X username and wallet to lock it in.</p>
+          </div>
+        </div>
+
+        <div id="gtd-form">
+          <div class="gtd-tasks">
+            <div class="task-item">
+              <span class="task-check" data-gtd="like"><span class="check-mark">✓</span></span>
+              <div class="task-copy">
+                <div class="task-title">Like the post</div>
+                <div class="task-sub">Show some love on the announcement</div>
+              </div>
+              <button type="button" class="task-go" data-gtd="like" data-url="https://x.com/StreetBornRH/status/2098747316106625029?s=20">Go</button>
+            </div>
+            <div class="task-item">
+              <span class="task-check" data-gtd="repost"><span class="check-mark">✓</span></span>
+              <div class="task-copy">
+                <div class="task-title">Repost the post</div>
+                <div class="task-sub">Put it on your timeline</div>
+              </div>
+              <button type="button" class="task-go" data-gtd="repost" data-url="https://x.com/StreetBornRH/status/2098747316106625029?s=20">Go</button>
+            </div>
+            <div class="task-item">
+              <span class="task-check" data-gtd="comment"><span class="check-mark">✓</span></span>
+              <div class="task-copy">
+                <div class="task-title">Comment and tag 2 friends</div>
+                <div class="task-sub">Mention 2 friends in your reply (@friend1 @friend2)</div>
+              </div>
+              <button type="button" class="task-go" data-gtd="comment" data-url="https://x.com/StreetBornRH/status/2098747316106625029?s=20">Go</button>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-track"><div class="progress-fill" id="gtd-progress-fill"></div></div>
+            <div class="progress-label" id="gtd-progress-label">0 of 3</div>
+          </div>
+
+          <div class="gtd-fields">
+            <div class="field" id="gtd-field-handle">
+              <label for="gtd-handle">Your X username</label>
+              <input type="text" id="gtd-handle" placeholder="@x" autocomplete="off">
+              <div class="err">Enter your X username (letters, numbers, underscore).</div>
+            </div>
+            <div class="field" id="gtd-field-wallet">
+              <label for="gtd-wallet">Wallet address (ETH)</label>
+              <input type="text" class="mono" id="gtd-wallet" placeholder="0x..." autocomplete="off">
+              <div class="err">Enter a valid Ethereum address (0x followed by 40 characters).</div>
+            </div>
+          </div>
+          <p class="field-note">Double-check your wallet address before submitting — it can't be edited after you claim.</p>
+          <div class="wizard-nav">
+            <span></span>
+            <button type="button" class="pill" id="gtd-submit" disabled>Claim GTD</button>
+          </div>
+          <div class="warning-box">
+            <span class="warning-icon">⚠</span>
+            <span><strong>Heads up:</strong> every task gets checked. Fake a task and your GTD is pulled.</span>
+          </div>
+        </div>
+
+        <div class="success-box" id="gtd-success">
+          <div class="check">✓</div>
+          <h3>GTD claimed</h3>
+          <p>Your username and wallet are in. We'll verify your tasks before mint.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
 
 <section id="gallery">
   <div class="section-head">
@@ -452,6 +720,10 @@
     <div class="faq-item">
       <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I get whitelisted?<span class="plus">+</span></div>
       <div class="faq-a"><p>Enter your X handle, complete the follow/like/repost/comment tasks, then submit your Gmail and wallet address. Approved applicants are notified before the private mint window opens.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I win a GTD?<span class="plus">+</span></div>
+      <div class="faq-a"><p>Solve any one of the five character puzzles, then submit your X username and wallet. You also need to like, repost and comment on the post, tagging 2 friends.</p></div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use the same wallet twice?<span class="plus">+</span></div>
@@ -887,6 +1159,303 @@
       walletField.querySelector('.err').textContent = 'Something went wrong sending your application — check your connection and try again.';
     });
   });
+
+  // GTD puzzle: sliding puzzle (3x3, one empty slot). Pick 1 of 5 characters,
+  // solve it before the timer ends. Tune difficulty with TIME_LIMIT below.
+  (function(){
+    const TIME_LIMIT   = 180; // seconds to solve (3 minutes)
+    const SHUFFLE_MOVES = 120;
+    const PEEK_MS = 3000;
+
+    const CHARACTERS = [
+      { id:'17380', img:'assets/17380.png' },
+      { id:'17384', img:'assets/17384.png' },
+      { id:'17390', img:'assets/17390.png' },
+      { id:'17412', img:'assets/17412.png' },
+      { id:'17386', img:'assets/17386.png' }
+    ];
+    const TOTAL = 9, EMPTY = 8;
+    const KEY = 'gtd_state_v1';
+
+    const $ = id => document.getElementById(id);
+    const pickView = $('gtd-pick'), playView = $('gtd-play'), choicesEl = $('gtd-choices');
+    const boardEl = $('gtd-board'), peekEl = $('gtd-peek'), peekBtn = $('gtd-peek-btn');
+    const nameEl = $('gtd-name'), movesEl = $('gtd-moves'), timeEl = $('gtd-time');
+    const actionsEl = $('gtd-actions'), claimEl = $('gtd-claim'), failEl = $('gtd-fail');
+    const rulesEl = $('gtd-rules');
+
+    function loadState(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+    function saveState(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+    const state = loadState();
+
+    let current = null, order = [], pieces = [];
+    let moves = 0, startTs = 0, timerId = null, seconds = 0, over = false, peeksLeft = 1;
+
+    function fmt(t){ t = Math.max(0, t); return String(Math.floor(t/60)).padStart(2,'0') + ':' + String(t%60).padStart(2,'0'); }
+
+    // ---- pick screen ----
+    const choiceBtns = CHARACTERS.map(c => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'gtd-choice';
+      b.innerHTML = `<img src="${c.img}" alt="Street Born #${c.id}" loading="lazy"><span>#${c.id}</span>`;
+      b.addEventListener('click', () => startPuzzle(c));
+      choicesEl.appendChild(b);
+      return b;
+    });
+
+    // Test helper: only appears when the page runs from a local file or localhost
+    const isLocal = location.protocol === 'file:' || ['localhost','127.0.0.1'].includes(location.hostname);
+    if(isLocal){
+      const r = document.createElement('button');
+      r.type = 'button';
+      r.className = 'pill outline small gtd-reset';
+      r.textContent = 'Reset game (test mode)';
+      r.addEventListener('click', () => { try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); });
+      rulesEl.insertAdjacentElement('afterend', r);
+    }
+
+    function refreshPick(){
+      const mins = TIME_LIMIT / 60;
+      const limitText = TIME_LIMIT % 60 === 0 ? `${mins} minute${mins === 1 ? '' : 's'}` : `${TIME_LIMIT} seconds`;
+      rulesEl.textContent = `You get ${limitText}. Run out of time? Try again as many times as you like.`;
+      choiceBtns.forEach(b => b.disabled = false);
+    }
+
+    // ---- puzzle ----
+    function startPuzzle(c){
+      if(state.won) return;                // already solved on this browser
+      current = c; over = false; moves = 0; peeksLeft = 1;
+      pickView.style.display = 'none';
+      playView.style.display = 'block';
+      actionsEl.style.display = 'flex';
+      failEl.classList.remove('show');
+      nameEl.textContent = 'Street Born #' + c.id;
+      peekEl.style.backgroundImage = `url("${c.img}")`;
+      peekBtn.disabled = false; peekBtn.textContent = 'Peek (1)';
+      boardEl.className = 'gtd-board';
+      boardEl.innerHTML = '';
+      pieces = [];
+      const probe = new Image();
+      probe.onerror = () => boardEl.classList.add('noimg');   // picture missing -> show tile numbers
+      probe.src = c.img;
+      for(let pos = 0; pos < TOTAL; pos++){
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gtd-piece';
+        b.style.backgroundImage = `url("${c.img}")`;
+        b.addEventListener('click', () => onPick(pos));
+        boardEl.appendChild(b);
+        pieces.push(b);
+      }
+      scramble();
+      paint();
+      startTs = Date.now();
+      tick();
+      timerId = setInterval(tick, 250);
+    }
+
+    function neighbors(pos){
+      const r = Math.floor(pos / 3), c = pos % 3, out = [];
+      if(r > 0) out.push(pos - 3);
+      if(r < 2) out.push(pos + 3);
+      if(c > 0) out.push(pos - 1);
+      if(c < 2) out.push(pos + 1);
+      return out;
+    }
+
+    // random legal moves from the solved state => always solvable
+    function scramble(){
+      do{
+        order = [...Array(TOTAL).keys()];
+        let empty = EMPTY, prev = -1;
+        for(let i = 0; i < SHUFFLE_MOVES; i++){
+          const opts = neighbors(empty).filter(n => n !== prev);
+          const n = opts[Math.floor(Math.random() * opts.length)];
+          [order[empty], order[n]] = [order[n], order[empty]];
+          prev = empty; empty = n;
+        }
+      } while(order.filter((p, i) => p !== i).length < 7);
+    }
+
+    function paint(){
+      pieces.forEach((b, pos) => {
+        const p = order[pos];
+        b.style.backgroundPosition = `${(p % 3) * 50}% ${Math.floor(p / 3) * 50}%`;
+        b.dataset.n = p + 1;
+        b.classList.toggle('empty', p === EMPTY);
+        b.setAttribute('aria-label', p === EMPTY ? 'Empty space' : 'Tile ' + (p + 1));
+      });
+      movesEl.textContent = moves;
+    }
+
+    function tick(){
+      if(over) return;
+      seconds = Math.floor((Date.now() - startTs) / 1000);
+      const left = TIME_LIMIT - seconds;
+      timeEl.textContent = fmt(left);
+      timeEl.classList.toggle('low', left <= 10);
+      if(left <= 0) lose();
+    }
+
+    function onPick(pos){
+      if(over) return;
+      const empty = order.indexOf(EMPTY);
+      if(!neighbors(empty).includes(pos)) return;
+      [order[empty], order[pos]] = [order[pos], order[empty]];
+      moves++;
+      paint();
+      if(order.every((p, i) => p === i)) win();
+    }
+
+    peekBtn.addEventListener('click', () => {
+      if(over || peeksLeft <= 0) return;
+      peeksLeft--;
+      peekBtn.disabled = true; peekBtn.textContent = 'Peek (0)';
+      peekEl.classList.add('on');
+      setTimeout(() => peekEl.classList.remove('on'), PEEK_MS);
+    });
+
+    function stop(){ over = true; clearInterval(timerId); timerId = null; actionsEl.style.display = 'none'; }
+
+    function lose(){
+      stop();
+      timeEl.textContent = '00:00';
+      boardEl.classList.add('failed');
+      $('gtd-fail-msg').textContent = 'No worries — shuffle again and give it another go.';
+      $('gtd-retry').style.display = 'inline-block';
+      failEl.classList.add('show');
+    }
+
+    $('gtd-retry').addEventListener('click', () => {
+      playView.style.display = 'none';
+      pickView.style.display = 'block';
+      refreshPick();
+    });
+
+    function win(){
+      stop();
+      timeEl.classList.remove('low');
+      boardEl.classList.add('solved');
+      peekEl.classList.remove('on');
+      state.won = { id: current.id, moves: moves, seconds: seconds };
+      saveState();
+      claimEl.classList.add('show');
+
+      const r = boardEl.getBoundingClientRect();
+      [0, 180, 360, 540].forEach(d => setTimeout(() => {
+        window.dispatchEvent(new MouseEvent('click', {
+          clientX: r.left + Math.random() * r.width,
+          clientY: r.top + Math.random() * r.height
+        }));
+      }, d));
+      setTimeout(() => claimEl.scrollIntoView({ behavior:'smooth', block:'start' }), 500);
+    }
+
+    // ---- claim form: 3 tasks + X username + wallet ----
+    const gtdTasks = { like:false, repost:false, comment:false };
+    const gtdTotal = Object.keys(gtdTasks).length;
+    const submitBtn = $('gtd-submit');
+    const fillEl = $('gtd-progress-fill');
+    const labelEl = $('gtd-progress-label');
+
+    document.querySelectorAll('.task-go[data-gtd]').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const key = btn.getAttribute('data-gtd');
+        window.open(btn.getAttribute('data-url'), '_blank', 'noopener');
+        gtdTasks[key] = true;
+        btn.classList.add('done');
+        btn.textContent = 'Done';
+        document.querySelector(`.task-check[data-gtd="${key}"]`).classList.add('done');
+        const n = Object.values(gtdTasks).filter(Boolean).length;
+        fillEl.style.width = (n / gtdTotal * 100) + '%';
+        labelEl.textContent = `${n} of ${gtdTotal}`;
+        submitBtn.disabled = n !== gtdTotal;
+      });
+    });
+
+    submitBtn.addEventListener('click', function(){
+      if(!state.won || Object.values(gtdTasks).some(v => !v)) return;
+      let valid = true;
+
+      const hField = $('gtd-field-handle'), hInput = $('gtd-handle');
+      let handle = hInput.value.trim();
+      if(handle && handle[0] !== '@') handle = '@' + handle;
+      if(!/^@\w{1,15}$/.test(handle)){ hField.classList.add('invalid'); valid = false; }
+      else { hField.classList.remove('invalid'); hInput.value = handle; }
+
+      const wField = $('gtd-field-wallet'), wInput = $('gtd-wallet');
+      if(!/^0x[a-fA-F0-9]{40}$/.test(wInput.value.trim())){ wField.classList.add('invalid'); valid = false; }
+      else wField.classList.remove('invalid');
+
+      if(!valid) return;
+
+      const original = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      const payload = new URLSearchParams({
+        type: 'GTD',
+        handle: handle,
+        email: '',
+        wallet: wInput.value.trim(),
+        puzzle: '#' + state.won.id,
+        moves: String(state.won.moves),
+        seconds: String(state.won.seconds),
+        timestamp: new Date().toISOString()
+      });
+
+      fetch(SHEET_ENDPOINT, { method:'POST', mode:'no-cors', body: payload })
+      .then(() => {
+        state.claimed = true; saveState();
+        $('gtd-form').style.display = 'none';
+        $('gtd-success').classList.add('show');
+      })
+      .catch(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = original;
+        wField.classList.add('invalid');
+        wField.querySelector('.err').textContent = 'Something went wrong sending your claim — check your connection and try again.';
+      });
+    });
+
+    // ---- restore on reload: a solved puzzle stays solved ----
+    if(state.won){
+      pickView.style.display = 'none';
+      playView.style.display = 'block';
+      playView.classList.add('gtd-restored');
+      claimEl.classList.add('show');
+      if(state.claimed){
+        $('gtd-form').style.display = 'none';
+        document.querySelector('.gtd-unlock').style.display = 'none';
+        const box = $('gtd-success');
+        box.querySelector('h3').textContent = 'Already claimed';
+        box.querySelector('p').textContent = "You've already claimed your GTD on this browser.";
+        box.classList.add('show');
+      }
+    } else {
+      refreshPick();
+    }
+  })();
+
+  // Menu drawer
+  (function(){
+    const btn = document.getElementById('menu-btn');
+    const drawer = document.getElementById('menu-drawer');
+    const overlay = document.getElementById('menu-overlay');
+    function setOpen(open){
+      drawer.classList.toggle('open', open);
+      overlay.classList.toggle('open', open);
+      document.body.classList.toggle('menu-open', open);
+      btn.setAttribute('aria-expanded', open);
+      drawer.setAttribute('aria-hidden', !open);
+    }
+    btn.addEventListener('click', () => setOpen(true));
+    document.getElementById('menu-close').addEventListener('click', () => setOpen(false));
+    overlay.addEventListener('click', () => setOpen(false));
+    drawer.querySelectorAll('a.menu-item').forEach(a => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') setOpen(false); });
+  })();
 </script>
 
 </body>
